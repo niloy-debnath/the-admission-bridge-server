@@ -1,39 +1,16 @@
-import express from "express";
-import cors from "cors";
+import { Pool } from "pg";
 import dotenv from "dotenv";
-import pkg from "pg";
-import serverless from "serverless-http";
 
 dotenv.config();
-const { Pool } = pkg;
-
-const app = express();
-app.use(cors());
-app.use(express.json());
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
 
-// Optional root route
-app.get("/", (req, res) => {
-  res.send("Admission Bridge API running 🚀");
-});
+export default async function handler(req, res) {
+  if (req.method !== "GET") return res.status(405).end();
 
-// Test DB route
-app.get("/test-db", async (req, res) => {
-  try {
-    const result = await pool.query("SELECT NOW()");
-    res.json(result.rows);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ message: "Database error" });
-  }
-});
-
-// Universities route
-app.get("/universities", async (req, res) => {
   try {
     const { minFee, maxFee, gpa, ielts, country, degree } = req.query;
 
@@ -65,11 +42,9 @@ app.get("/universities", async (req, res) => {
         (!ielts || Number(ielts) >= u.min_ielts),
     }));
 
-    res.json(universities);
+    res.status(200).json(universities);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ message: "Database error" });
   }
-});
-
-export default serverless(app);
+}
