@@ -35,13 +35,13 @@ export default async function handler(req, res) {
     const values = [minFeeNum, maxFeeNum];
     let idx = 3;
 
-    if (country) {
+    if (country && country.trim() !== "") {
       query += ` AND LOWER(country) LIKE LOWER($${idx})`;
       values.push(`%${country}%`);
       idx++;
     }
 
-    if (degree) {
+    if (degree && degree.trim() !== "") {
       query += ` AND LOWER(degree_level) LIKE LOWER($${idx})`;
       values.push(`%${degree}%`);
       idx++;
