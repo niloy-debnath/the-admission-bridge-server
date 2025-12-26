@@ -65,4 +65,5 @@ app.get("/test-db", async (req, res) => {
   res.json(result.rows);
 });
 
-app.listen(5000, () => console.log("Server running on http://localhost:5000"));
+export default app;
+// app.listen(5000, () => console.log("Server running on http://localhost:5000"));
