@@ -72,5 +72,5 @@ app.get("/universities", async (req, res) => {
   }
 });
 
-// Export serverless handler
-export const handler = serverless(app);
+// This is the **Vercel serverless export** (required!)
+export default serverless(app);
