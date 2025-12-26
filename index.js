@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import pkg from "pg";
+import serverless from "serverless-http";
 
 dotenv.config();
 const { Pool } = pkg;
@@ -15,7 +16,23 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-// Get all Universities
+// Optional root route
+app.get("/", (req, res) => {
+  res.send("Admission Bridge API running 🚀");
+});
+
+// Test DB route
+app.get("/test-db", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT NOW()");
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ message: "Database error" });
+  }
+});
+
+// Universities route
 app.get("/universities", async (req, res) => {
   try {
     const { minFee, maxFee, gpa, ielts, country, degree } = req.query;
@@ -23,12 +40,7 @@ app.get("/universities", async (req, res) => {
     const minFeeNum = minFee ? Number(minFee) : 0;
     const maxFeeNum = maxFee ? Number(maxFee) : 100000;
 
-    let query = `
-      SELECT *
-      FROM universities
-      WHERE tuition_fee BETWEEN $1 AND $2
-    `;
-
+    let query = `SELECT * FROM universities WHERE tuition_fee BETWEEN $1 AND $2`;
     const values = [minFeeNum, maxFeeNum];
     let idx = 3;
 
@@ -54,16 +66,11 @@ app.get("/universities", async (req, res) => {
     }));
 
     res.json(universities);
-  } catch (error) {
-    console.error("DB ERROR:", error.message);
+  } catch (err) {
+    console.error(err.message);
     res.status(500).json({ message: "Database error" });
   }
 });
 
-app.get("/test-db", async (req, res) => {
-  const result = await pool.query("SELECT NOW()");
-  res.json(result.rows);
-});
-
-export default app;
-// app.listen(5000, () => console.log("Server running on http://localhost:5000"));
+// Export serverless handler
+export const handler = serverless(app);
