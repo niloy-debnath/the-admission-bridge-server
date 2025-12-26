@@ -1,5 +1,12 @@
+import { Pool } from "pg";
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+});
+
 export default async function handler(req, res) {
-  // CORS headers
+  // ---- CORS ----
   res.setHeader(
     "Access-Control-Allow-Origin",
     "https://the-admission-bridge-client.vercel.app"
@@ -7,7 +14,6 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  // Handle preflight request
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
@@ -50,9 +56,9 @@ export default async function handler(req, res) {
         (!ielts || Number(ielts) >= u.min_ielts),
     }));
 
-    res.status(200).json(universities);
+    return res.status(200).json(universities);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Database error" });
+    console.error("API ERROR:", err);
+    return res.status(500).json({ message: "Database error" });
   }
 }
